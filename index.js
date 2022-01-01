@@ -4,6 +4,11 @@ const express = require('express');
 //Create a "variable" app to instatiate the express framework
 const app = express() ;
 
+//import the task-schema to our app
+const utils = require('./utils/task-schema.js')
+
+//This allows us to create POST, PUT AND PATCH requests with json
+app.use(express.json());
 
 //Create an array locally that will serve as our "database"
 const tasks = [
@@ -80,6 +85,49 @@ our original GET request which will return the task array in its entirety.
 
 
 //POST
+/*To create new tasks, we need to include json support because 
+we need to send data in the body including the different attributes 
+of our task object. For that we use line 8. 
+By sending a POST request, we are creating new data/payload. For this 
+reaason, there is a need to validate the json payload that we are receiving
+to ensure that it is valid.
+*/
+app.post("/api/tasks", (request, response) => {
+    const { error } = utils.validateTask(request.body);
+
+    if(error) return response.status(400).send("The name should be at least 3 chars long!")
+
+    const task = {
+        id: tasks.length + 1,
+        name: request.body.name,
+        completed: request.body.completed
+    };
+
+    tasks.push(task);
+    response.send(task);
+});
+
+/*line 96 has a variable created to hold an error should the request return 
+an error. This variable is equal to utils variable which is responsible 
+for validating the data with "validateTask".
+line 98 is an if statement that sends an error message if the request returns
+an error.
+line 100 begins the process of creating the task we want to send in the POST
+request.
+line 101 increases the length of the tasks array by 1 programmatically(rather
+than hardcoding the value) because by creating a new POST item, 
+the array size/length increases by 1. 
+line 102 will contain the "name" attribute of the task and will derive
+such attribute from the name property of the request body when the request 
+is created in POSTMAN.
+line 103 will contain the "completed" attribute of the task and will derive
+such attribute from the "completed" attribute of the request body when the
+request is created in POSTMAN.
+line 106 pushes the newly created task into the tasks array.
+line 107 returns a response from the previous push action and should tell us
+if the task we created was validated by the schema or not.
+
+*/
 
 //PUT
 
@@ -91,4 +139,4 @@ our original GET request which will return the task array in its entirety.
 //Before running the program, we need to start the server on a dedicated port
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log('Listening on port ${port}...'));
-process.exit();
+//process.exit();
