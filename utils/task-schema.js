@@ -5,11 +5,34 @@ ultimately accept accurate data)
 */
 
 //import joi
+const res = require('express/lib/response');
+const { isSchema } = require('joi');
 const Joi = require('joi');
 
-const taskSchema = {
+//create the joi object
+const taskSchema = Joi.object({
     name: Joi.string().min(3).required(),
     completed: Joi.boolean()
-};
+});
 
-exports.validateTask = (task) => Joi.validate(task, taskSchema);
+//export joi object
+module.exports.taskSchema = taskSchema;
+
+/*const taskSchema = Joi.object({
+    name: Joi.string().min(3).required(),
+    completed: Joi.boolean() 
+    
+});*/
+
+//const validation = taskSchema.validate(request.body);
+//res.send(validation);
+//isSchema.validate({ username:})
+/*router.post("/api/tasks", (request, response) => {
+const validation = taskSchema.validate(request.body);
+    if(validation.error){
+        res.status(400).send(validation.error.details[0].message);
+        return;
+    };
+})*/
+
+//exports.validateTask = (task) => Joi.validate(task, taskSchema);

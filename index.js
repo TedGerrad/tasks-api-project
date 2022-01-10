@@ -6,6 +6,7 @@ const app = express() ;
 
 //import the task-schema to our app
 const utils = require('./utils/task-schema.js')
+const {taskSchema} = require('./utils/task-schema');
 
 //This allows us to create POST, PUT AND PATCH requests with json
 app.use(express.json());
@@ -93,9 +94,11 @@ reaason, there is a need to validate the json payload that we are receiving
 to ensure that it is valid.
 */
 app.post("/api/tasks", (request, response) => {
-    const { error } = utils.validateTask(request.body);
+    const {error, value} = taskSchema.validate(request.body);
 
     if(error) return response.status(400).send("The name should be at least 3 chars long!")
+
+// Create new object that we will pass to the tasks array
 
     const task = {
         id: tasks.length + 1,
@@ -106,6 +109,8 @@ app.post("/api/tasks", (request, response) => {
     tasks.push(task);
     response.send(task);
 });
+
+
 
 /*line 96 has a variable created to hold an error should the request return 
 an error. This variable is equal to utils variable which is responsible 
@@ -129,7 +134,23 @@ if the task we created was validated by the schema or not.
 
 */
 
-//PUT
+/*PUT: update task by receiving task identifier and json that includes the 
+attributes of the task that we want to change
+*/  
+app.put('/api/tasks/:id', (request, response) => {
+    const taskId = request.params.id;
+    const task = tasks.find(task => task.id === parseInt(taskId)); 
+    if(!task) return response.status(404).send("The task with the provided ID does not exist");
+
+    const { error } = taskSchema.validate(request.body);
+
+    if(error) return response.status(400).send('The name should be at least 3 chars long')
+    
+    task.name = request.body.name;
+    task.completed = request.body.completed;
+
+    response.send(task);
+});
 
 //PATCH
 
@@ -139,4 +160,4 @@ if the task we created was validated by the schema or not.
 //Before running the program, we need to start the server on a dedicated port
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log('Listening on port ${port}...'));
-//process.exit();
+process.exit();
